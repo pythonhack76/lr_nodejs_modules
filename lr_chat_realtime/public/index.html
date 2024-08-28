@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Room</title>
+  <style>
+    body { font-family: Arial, sans-serif; }
+    #messages { list-style-type: none; margin: 0; padding: 0; }
+    #messages li { padding: 8px; margin-bottom: 10px; background: #f4f4f4; border-radius: 5px; }
+    #form { background: #333; padding: 3px; position: fixed; bottom: 0; width: 100%; }
+    #input { border: none; padding: 10px; width: 90%; margin-right: 0.5%; }
+    #input:focus { outline: none; }
+    #send-button { width: 9%; background: #333; border: none; padding: 10px; color: white; cursor: pointer; }
+    #notifications { background: #ffeb3b; padding: 10px; border-radius: 5px; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <ul id="messages"></ul>
+  <form id="form" action="">
+    <input id="input" autocomplete="off" /><button id="send-button">Invia Messaggio </button>
+  </form>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    var socket = io();
+
+    var form = document.getElementById('form');
+    var input = document.getElementById('input');
+
+    // Gestisci l'invio di messaggi di chat
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      if (input.value) {
+        socket.emit('chat message', input.value);
+        input.value = '';
+      }
+    });
+
+    // Mostra i messaggi di chat nella lista
+    socket.on('chat message', function(msg) {
+      var item = document.createElement('li');
+      item.textContent = msg;
+      document.getElementById('messages').appendChild(item);
+      window.scrollTo(0, document.body.scrollHeight);
+    });
+
+    // Mostra le notifiche
+    socket.on('notification', function(notification) {
+      var item = document.createElement('div');
+      item.id = 'notifications';
+      item.textContent = notification;
+      document.body.insertBefore(item, document.getElementById('form'));
+      setTimeout(() => {
+        document.body.removeChild(item);
+      }, 5000); // La notifica scompare dopo 5 secondi
+    });
+  </script>
+</body>
+</html>
